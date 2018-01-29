@@ -1,0 +1,197 @@
+/**
+ *
+ *
+ * @author Guys1444
+ * 
+ 
+ */
+public class Ex14
+{
+    /**
+     * Question 1
+     * ------------------------------------
+     */
+    
+    public static final int NOT_FOUND = -1;
+    
+    /**
+     *
+     * Time complexity: Log(n)
+     * (Because first a binary search finds the first index,
+     *  then a binary search finds the last index in the remainder of the array,
+     *  so it's 2*Log(n) = Log(n)
+     * Space complexity: O(1) (Only a constant number of variables are used)
+     * 
+     * @param a A sorted array (ascending)
+     * @param x The number whose occurrences in the array will be counted
+     * @return Count of param x
+     */
+    public static int count (int[] a, int x)
+    {
+        int startIndex = firsIndexOf(a, x, 0, a.length-1);
+        if (startIndex == NOT_FOUND)
+            return 0;
+        int endIndex = lastIndexOf(a, x, startIndex, a.length-1);
+        
+        // Return the count
+        return endIndex - startIndex + 1;
+    }
+    
+    /**
+     * Binary search for the first index of x in a
+     * @param a A sorted array
+     * @param x The number to search for
+     * @return First index of x, or -1 if not found
+     */
+    private static int firsIndexOf(int[] a, int x, int lo, int hi) {
+        int mid;
+        while (lo <= hi) {
+            // x is in a[lo,..,hi] or not present
+            mid = lo + (hi - lo) / 2;
+            if (x < a[mid] || (x==a[mid] && (mid > 0 && x==a[mid-1])))
+                // Number not found or is not first occurrence
+                hi = mid - 1;
+            else if (x > a[mid])
+                lo = mid + 1;
+            else
+                return mid;
+        }
+        return NOT_FOUND;
+    }
+    
+    /**
+     * Binary search for the last index of x in a
+     * @param a A sorted array
+     * @param x The number to search for
+     * @return Last index of x, or -1 if not found
+     */
+    private static int lastIndexOf(int[] a, int x, int lo, int hi) {
+        int mid;
+        while (lo <= hi) {
+            // x is in a[lo,..,hi] or not present
+            mid = lo + (hi - lo) / 2;
+            if (x > a[mid] || (x==a[mid] && (mid < a.length-1 && x==a[mid+1])))
+                // Number not found or is not last occurance
+                lo = mid + 1;
+            else if (x < a[mid])
+                hi = mid - 1;
+            else
+                return mid;
+        }
+        return NOT_FOUND;
+    }
+    
+    /**
+     * Question 2
+     * ------------------------------------
+     */
+    
+    /**
+     * Find the number of swaps that need to be made between bits in the string
+     * so that the string will alternate (meaning it will look like 01010101 or 10101010)
+     * Time complexity: O(n) (it only has one loop of n/2 = O(n/2) = O(n))
+     * Space complexity: O(1) (Only a constant number of variables are used)
+     * 
+     * @param s The string (length must be 2n and must consist of n zeros and n ones)
+     * @return Count of swaps that need to be made
+     */
+    public static int alternating (String s)
+    {
+        int count1 = 0;
+        int count2 = 0;
+        // Iterate over array and see what way would require less swaps
+        for (int i = 0; i < s.length(); i+=2)
+        {
+            if (s.charAt(i) == '0')
+                ++count1;
+            if (s.charAt(i  +1) == '0')
+                ++count2;
+        }
+        int option1 = s.length() / 2 - count1;
+        int option2 = s.length() / 2 - count2;
+        
+        return Math.min(option1, option2);
+    }
+    
+    /**
+     * Question 3
+     * ------------------------------------
+     */
+    
+    public static final int ALREADY_VISITED = -1;
+    
+    /**
+     * Find if there's a way to start from the first cell, increase or decrease the index
+     * by the cell value, do the same for the new index and end up in the last cell
+     * (without goint out of array bounds)
+     * Time complexity: O(n)
+     * (Because each cell can only be visited once, otherwise it will be an infinite loop
+     *  and in the worst case, each cell will be visited)
+     * Space complexity: O(n) (for the same reason)
+     * @param a The array
+     * @return Weather of not a legal course exists
+     */
+    public static boolean isWay(int[] a)
+    {
+        return isWay(a, 0);
+    }
+    
+    // A helper recursive function
+    public static boolean isWay(int[] a, int index)
+    {
+        if ((index < 0 || index > a.length - 1) || // Illegal move
+            (a[index] == ALREADY_VISITED))         // Infinite recursion
+            return false; 
+        if (index == a.length - 1)
+            return true; // Legal ending
+            
+        int tmp = a[index];                        // Save cell value
+        a[index] = ALREADY_VISITED;                // Mark as visited
+        
+        // See if one of the moves can end up valid
+        boolean result = isWay(a, index + tmp) || isWay(a, index - tmp);
+        a[index] = tmp;                            // Restore value
+        return result;
+    }
+    
+    /**
+     * Question 4
+     * ------------------------------------
+     */
+    
+    /**
+     * Print a path to a hill in the matrix
+     * (a hill is a cell whoose value is greater than all surronding cells, if such exist.
+     *  since all cell values must be unique, there will necessarily be a 'hill')
+     * Time complexity: O(n)
+     * (Because each cell can only be visited once, otherwise it will be an infinite loop
+     *  and in the worst case, each cell will be visited)
+     * Space complexity: O(n) (for the same reason)
+     * @param mat The matrix
+     */
+    public static void printPath (int[][] mat)
+    {
+        // Print the result of the helper function
+        System.out.println(printPath(mat, 0, 0));
+    }
+    
+    // A helper recursive function
+    private static String printPath (int[][] mat, int i, int j)
+    {
+        // Save the current cell as a string
+        String currCell = "(" + i + "," + j + ")";
+        // Check if any directions' value is larger than current cell value (within matrix boundries).
+        // If so, return the current cell + another function call,
+        // which will recursively find the path to the hill
+        // If no condition is met, the current cell is a hill
+        if (i > 0 && mat[i-1][j] > mat[i][j])                 // UP
+            return currCell + " " + printPath(mat, i-1, j);
+        if (j < mat[i].length-1 && mat[i][j+1] > mat[i][j])   // RIGHT
+            return currCell + " " + printPath(mat, i, j+1);
+        if (i < mat.length-1 && mat[i+1][j] > mat[i][j])      // DOWN
+            return currCell + " " + printPath(mat, i+1, j);
+        if (j > 0 && mat[i][j-1] > mat[i][j])                 // LEFT
+            return currCell + " " + printPath(mat, i, j-1);
+        return currCell;
+    }
+}
